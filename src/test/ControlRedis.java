@@ -19,7 +19,7 @@ public class ControlRedis {
         jedis = null;
     }
 
-    //测试 helloworld！
+    //测试 helloworld
     public static String SayHelloWorld() throws Exception
     {
         InitialJedis();
