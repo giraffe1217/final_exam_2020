@@ -231,9 +231,8 @@ public class ControlRedis {
             //如果当前不存在 userName 这个集合   操作失败
             return false;
         }
-        String bookType = GetBookType(userName,bookNum);
 
-        InitialJedis();
+        String bookType = GetOneGood(userName,bookNum).get("bookType");
         jedis.srem(bookType,userName + bookNum);
         jedis.srem(userName,userName + bookNum);
         jedis.del(userName + bookNum);
