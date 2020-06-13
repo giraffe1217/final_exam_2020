@@ -1,9 +1,8 @@
 package test;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -29,7 +28,7 @@ public class ControlRedis {
     }
 
     //测试 helloworld！
-    public static String SayHelloWorld() throws Exception
+    public static String SayHelloWorld()
     {
         InitialJedis();
 
@@ -125,7 +124,7 @@ public class ControlRedis {
 
     //region 卖家管理商品
 
-    // TODO 增加一个图书商品  (用户名,书名，编号，类型，价格，ISBN，摘要，出售种类，剩余数量)   其中 bookNum 不允许相同
+    // TODO 增加一个图书商品  (用户名，书名，编号，类型，价格，ISBN，摘要，出售种类，剩余数量)  其中 bookNum 不允许相同
     public static boolean StoreOneGood(String userName, String bookName,String bookNum,String bookType,String price,
                                        String ISBN,String summary,String sellType,String remainNum)
     {
@@ -155,6 +154,7 @@ public class ControlRedis {
         // 每个商品对应 一个哈希表 userName + bookNum 来保存当前商品的所有信息
         jedis.hmset(userName + bookNum,map);
         jedis.sadd(userName,userName + bookNum);
+        jedis.sadd(bookType,userName + bookNum);
 
         CloseJedis();
         return true;
@@ -169,6 +169,7 @@ public class ControlRedis {
         // 每个商品对应 一个哈希表 userName + bookNum 来保存当前商品的所有信息
         jedis.hmset(userName + map.get("bookNum"), map);
         jedis.sadd(userName,userName + map.get("bookNum"));
+        jedis.sadd(map.get("bookType"),userName + map.get("bookNum"));
 
         CloseJedis();
         return true;
@@ -205,7 +206,7 @@ public class ControlRedis {
             StoreOneGood(userName,oneItem);
         }
         else{
-            DeleteOneGood(userName,bookNum);
+            DeleteAllGood(userName,bookNum);
         }
 
         CloseJedis();
@@ -213,7 +214,7 @@ public class ControlRedis {
     }
 
     //TODO 直接删除当前商品
-    public static boolean DeleteOneGood(String userName,String bookNum)
+    public static boolean DeleteAllGood(String userName,String bookNum)
     {
         InitialJedis();
 
@@ -230,16 +231,46 @@ public class ControlRedis {
             //如果当前不存在 userName 这个集合   操作失败
             return false;
         }
+        String bookType = GetBookType(userName,bookNum);
 
-        jedis.del(userName + bookNum);
+        InitialJedis();
+        jedis.srem(bookType,userName + bookNum);
         jedis.srem(userName,userName + bookNum);
+        jedis.del(userName + bookNum);
+
         CloseJedis();
         return true;
     }
 
+    //TODO 返回一个图书商品的类别 bookType
+    //TODO 书籍类型分为  politics  economics  literature  science  sport  military
+    public static String GetBookType(String userName,String bookNum)
+    {
+        InitialJedis();
+
+        // 如果当前存在 userName 这个集合 那么就检查一下有没有当前商品
+        if(jedis.exists(userName))
+        {
+            // 不存在当前bookNum   操作失败
+            if(!jedis.sismember(userName,userName + bookNum))
+            {
+                return "";
+            }
+        }
+        else {
+            //如果当前不存在 userName 这个集合   操作失败
+            return "";
+        }
+
+        String bookType = GetOneGood(userName,bookNum).get("bookType");
+
+        CloseJedis();
+        return bookType;
+    }
+
 
     // TODO 展示一个图书商品  (用户名,书名，编号，类型，价格，ISBN，摘要，出售种类，剩余数量)
-    // TODO 返回值是一个 hashmap 需要通过 map.get() 获得相关key的value
+    // TODO 返回值是一个 hashmap 需要通过 map.get() 获得相关 key 的 value
     public static Map<String,String> GetOneGood(String userName,String bookNum)
     {
         InitialJedis();
@@ -274,15 +305,29 @@ public class ControlRedis {
 
     //region 商品搜索
 
+    //TODO 根据类别 展示当前类别的商品   返回  Set<Map<String,String>>   就是 哈希表的集合
+    public static Set<Map<String,String>> ShowAllGoodsByType(String bookType)
+    {
+        InitialJedis();
 
+        Set<String> bookSet = jedis.smembers(bookType);
+        Set<Map<String,String>> books = new HashSet<>();
+
+        for (String str : bookSet)
+        {
+            books.add(jedis.hgetAll(str));
+            System.out.println(str);
+        }
+
+        CloseJedis();
+        return books;
+    }
 
     //endregion
 
     //测试 暂时没有网页所以就用main函数测试函数功能
-    public static void main(String[] args) throws Exception
+    public static void main(String[] args)
     {
         ClearJedis();
-
-
     }
 }
