@@ -24,6 +24,7 @@
     }
     catch (Exception e) {
         e.printStackTrace();
+        out.print(e);
     }
 %>
 </body>

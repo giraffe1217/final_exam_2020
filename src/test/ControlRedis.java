@@ -14,7 +14,9 @@ public class ControlRedis {
     //创建连接
     private static void InitialJedis()
     {
-        jedis = new Jedis("127.0.0.1",6379);
+        jedis = new Jedis("localhost");
+        String pong = jedis.ping();
+        System.out.println(pong);
     }
 
     //关闭连接
@@ -31,14 +33,11 @@ public class ControlRedis {
     public static String SayHelloWorld()
     {
         InitialJedis();
-
         jedis.set("test", "HelloWorld!");
         String value = jedis.get("test");
-
         jedis.del("test");
-
         CloseJedis();
-        return value;
+        return (value);
     }
 
     //清空数据库中的所有内容

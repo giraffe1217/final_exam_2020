@@ -1,8 +1,6 @@
 <component name="libraryTable">
   <library name="Maven: redis.clients:jedis:2.7.3">
-    <CLASSES>
-      <root url="jar://$MAVEN_REPOSITORY$/redis/clients/jedis/2.7.3/jedis-2.7.3.jar!/" />
-    </CLASSES>
+    <CLASSES />
     <JAVADOC>
       <root url="jar://$MAVEN_REPOSITORY$/redis/clients/jedis/2.7.3/jedis-2.7.3-javadoc.jar!/" />
     </JAVADOC>
