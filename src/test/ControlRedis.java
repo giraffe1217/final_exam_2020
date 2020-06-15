@@ -1,10 +1,12 @@
 package test;
 
 import redis.clients.jedis.Jedis;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.io.*;
 
 public class ControlRedis {
     private static Jedis jedis;
@@ -124,9 +126,9 @@ public class ControlRedis {
 
     //region 卖家管理商品
 
-    // TODO 增加一个图书商品  (用户名，书名，编号，类型，价格，ISBN，摘要，出售种类，剩余数量)  其中 bookNum 不允许相同
+    // TODO 增加一个图书商品  (用户名，书名，编号，类型，价格，ISBN，摘要，出售种类，剩余数量，本地图片地址)  其中 bookNum 不允许相同
     public static boolean StoreOneGood(String userName, String bookName,String bookNum,String bookType,String price,
-                                       String ISBN,String summary,String sellType,String remainNum)
+                                       String ISBN,String summary,String sellType,String remainNum,String localPos)
     {
         InitialJedis();
 
@@ -149,6 +151,7 @@ public class ControlRedis {
         map.put("summary",summary);
         map.put("sellType",sellType);
         map.put("remainNum",remainNum);
+        map.put("localPos",localPos);
 
         // 由于 不同的卖家 对应不同的 出售商品列表   需要一个集合 userName 来存储 它的所有商品
         // 每个商品对应 一个哈希表 userName + bookNum 来保存当前商品的所有信息
@@ -269,7 +272,7 @@ public class ControlRedis {
     }
 
 
-    // TODO 展示一个图书商品  (用户名,书名，编号，类型，价格，ISBN，摘要，出售种类，剩余数量)
+    // TODO 展示一个图书商品  (用户名,书名，编号，类型，价格，ISBN，摘要，出售种类，剩余数量,本地图片地址)
     // TODO 返回值是一个 hashmap 需要通过 map.get() 获得相关 key 的 value
     public static Map<String,String> GetOneGood(String userName,String bookNum)
     {
@@ -326,8 +329,8 @@ public class ControlRedis {
     //endregion
 
     //测试 暂时没有网页所以就用main函数测试函数功能
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) throws IOException {
         ClearJedis();
+
     }
 }
