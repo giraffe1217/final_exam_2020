@@ -1,10 +1,12 @@
 package test;
 
 import redis.clients.jedis.Jedis;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.io.*;
 
 public class ControlRedis {
     private static Jedis jedis;
@@ -14,9 +16,7 @@ public class ControlRedis {
     //创建连接
     private static void InitialJedis()
     {
-        jedis = new Jedis("localhost");
-        String pong = jedis.ping();
-        System.out.println(pong);
+        jedis = new Jedis("127.0.0.1",6379);
     }
 
     //关闭连接
@@ -33,11 +33,14 @@ public class ControlRedis {
     public static String SayHelloWorld()
     {
         InitialJedis();
+
         jedis.set("test", "HelloWorld!");
         String value = jedis.get("test");
+
         jedis.del("test");
+
         CloseJedis();
-        return (value);
+        return value;
     }
 
     //清空数据库中的所有内容
@@ -59,7 +62,8 @@ public class ControlRedis {
 
         // 所有的买家账户信息都存储在 customer 哈希表中
         jedis.hset("customer",userName,password);
-
+        jedis.hset(userName,"sum", "0");
+        jedis.hset(userName,"Money", "0");
         CloseJedis();
     }
 
@@ -123,9 +127,9 @@ public class ControlRedis {
 
     //region 卖家管理商品
 
-    // TODO 增加一个图书商品  (用户名，书名，编号，类型，价格，ISBN，摘要，出售种类，剩余数量)  其中 bookNum 不允许相同
+    // TODO 增加一个图书商品  (用户名，书名，编号，类型，价格，ISBN，摘要，出售种类，剩余数量，本地图片地址)  其中 bookNum 不允许相同
     public static boolean StoreOneGood(String userName, String bookName,String bookNum,String bookType,String price,
-                                       String ISBN,String summary,String sellType,String remainNum)
+                                       String ISBN,String summary,String sellType,String remainNum,String localPos)
     {
         InitialJedis();
 
@@ -148,6 +152,7 @@ public class ControlRedis {
         map.put("summary",summary);
         map.put("sellType",sellType);
         map.put("remainNum",remainNum);
+        map.put("localPos",localPos);
 
         // 由于 不同的卖家 对应不同的 出售商品列表   需要一个集合 userName 来存储 它的所有商品
         // 每个商品对应 一个哈希表 userName + bookNum 来保存当前商品的所有信息
@@ -268,7 +273,7 @@ public class ControlRedis {
     }
 
 
-    // TODO 展示一个图书商品  (用户名,书名，编号，类型，价格，ISBN，摘要，出售种类，剩余数量)
+    // TODO 展示一个图书商品  (用户名,书名，编号，类型，价格，ISBN，摘要，出售种类，剩余数量,本地图片地址)
     // TODO 返回值是一个 hashmap 需要通过 map.get() 获得相关 key 的 value
     public static Map<String,String> GetOneGood(String userName,String bookNum)
     {
@@ -296,8 +301,54 @@ public class ControlRedis {
 
     //endregion
 
-    //region 买家管理购物车及购买商品
+    //region 买家管理购物车及购买商品！（默认展示的商品都可购买）
 
+    //TODO 根据图书的唯一标识：UserName+bookNum => BookID将一定数量的图书加入购物车(买家用户名，图书标识，购买数量，库存数量)
+    public static boolean AddShoppingCart(String Customer,String BookID,String Price,String BuyNum,String remainNum){
+        InitialJedis();
+
+        //如果购买数量≤库存,即可加入购物车
+        if((Integer.parseInt(BuyNum)<=Integer.parseInt(remainNum))){
+            Map <String ,String> map = new HashMap<>();
+            map.put("BookID",BookID);
+            map.put("Price",Price);
+            map.put("BuyNum",BuyNum);
+            double price = Double.parseDouble(Price)*Integer.parseInt(BuyNum);
+            //将该 图书加入用户的购物车
+            jedis.hmset(Customer,map);
+            jedis.hincrByFloat(Customer,"sum",price);
+            CloseJedis();
+            return true;
+        }
+        //否则失败
+        else {
+            CloseJedis();
+            return false;
+        }
+
+    }
+
+    //TODO 结算购物车
+    public static boolean BuyGoods(String Customer){
+        InitialJedis();
+        //判断购物车是否为空
+        if(jedis.hlen(Customer) < 1){
+            CloseJedis();
+            return false;
+        }
+        else {
+            //判断余额是否足以支付
+            if(Double.parseDouble(jedis.hget(Customer,"Money"))>=Double.parseDouble(jedis.hget(Customer,"sum"))){
+                double payment = Double.parseDouble(jedis.hget(Customer,"sum"))-Double.parseDouble(jedis.hget(Customer,"Money"));
+                jedis.hincrByFloat(Customer,"Money",payment);
+                //减少库存数(还没写)
+                CloseJedis();
+                return true;
+            }
+        }
+        CloseJedis();
+        return false;
+    }
 
 
     //endregion
@@ -325,8 +376,8 @@ public class ControlRedis {
     //endregion
 
     //测试 暂时没有网页所以就用main函数测试函数功能
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) throws IOException {
         ClearJedis();
+
     }
 }
