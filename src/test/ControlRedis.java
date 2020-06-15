@@ -60,7 +60,8 @@ public class ControlRedis {
 
         // 所有的买家账户信息都存储在 customer 哈希表中
         jedis.hset("customer",userName,password);
-
+        jedis.hset(userName,"sum", "0");
+        jedis.hset(userName,"Money", "0");
         CloseJedis();
     }
 
@@ -297,8 +298,54 @@ public class ControlRedis {
 
     //endregion
 
-    //region 买家管理购物车及购买商品！
+    //region 买家管理购物车及购买商品！（默认展示的商品都可购买）
 
+    //TODO 根据图书的唯一标识：UserName+bookNum => BookID将一定数量的图书加入购物车(买家用户名，图书标识，购买数量，库存数量)
+    public static boolean AddShoppingCart(String Customer,String BookID,String Price,String BuyNum,String remainNum){
+        InitialJedis();
+
+        //如果购买数量≤库存,即可加入购物车
+        if((Integer.parseInt(BuyNum)<=Integer.parseInt(remainNum))){
+            Map <String ,String> map = new HashMap<>();
+            map.put("BookID",BookID);
+            map.put("Price",Price);
+            map.put("BuyNum",BuyNum);
+            double price = Double.parseDouble(Price)*Integer.parseInt(BuyNum);
+            //将该 图书加入用户的购物车
+            jedis.hmset(Customer,map);
+            jedis.hincrByFloat(Customer,"sum",price);
+            CloseJedis();
+            return true;
+        }
+        //否则失败
+        else {
+            CloseJedis();
+            return false;
+        }
+
+    }
+
+    //TODO 结算购物车
+    public static boolean BuyGoods(String Customer){
+        InitialJedis();
+        //判断购物车是否为空
+        if(jedis.hlen(Customer) < 1){
+            CloseJedis();
+            return false;
+        }
+        else {
+            //判断余额是否足以支付
+            if(Double.parseDouble(jedis.hget(Customer,"Money"))>=Double.parseDouble(jedis.hget(Customer,"sum"))){
+                double payment = Double.parseDouble(jedis.hget(Customer,"sum"))-Double.parseDouble(jedis.hget(Customer,"Money"));
+                jedis.hincrByFloat(Customer,"Money",payment);
+                //减少库存数(还没写)
+                CloseJedis();
+                return true;
+            }
+        }
+        CloseJedis();
+        return false;
+    }
 
 
     //endregion
