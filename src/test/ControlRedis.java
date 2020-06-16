@@ -339,7 +339,7 @@ public class ControlRedis {
 
     //endregion
 
-    //region 买家管理购物车及购买商品！（默认展示的商品都可购买）
+    //region 买家管理购物车及购买商品（默认展示的商品都可购买）
 
     //TODO 根据图书的唯一标识：UserName+bookNum => BookID将一定数量的图书加入购物车(买家用户名，图书标识，购买数量，库存数量)
     public static boolean AddShoppingCart(String Customer,String BookID,String Price,String BuyNum,String remainNum)
