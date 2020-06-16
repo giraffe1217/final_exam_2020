@@ -63,8 +63,9 @@ public class ControlRedis {
 
         // 所有的买家账户信息都存储在 customer 哈希表中
         jedis.hset("customer",userName,password);
+        //初始化购物车内总价格为0
         jedis.hset(userName,"sum", "0");
-        jedis.hset(userName,"Money", "0");
+        //jedis.hset(userName,"Money", "0");
         CloseJedis();
     }
 
