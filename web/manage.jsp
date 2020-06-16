@@ -183,6 +183,7 @@
                         <th>摘要</th>
                         <th>出售种类</th>
                         <th>剩余数量</th>
+                        <th>删除按钮</th>
                     </tr>
                 <%
                     Set<Map<String,String>> books = ControlRedis.ShowAllGoodsByUser(ControlRedis.GetUserName());
@@ -197,6 +198,7 @@
                             <td><%=map.get("summary") %></td>
                             <td><%=map.get("sellType") %></td>
                             <td><%=map.get("remainNum") %></td>
+                            <td><a href="deleteOneItem.jsp?id=<%=map.get("bookNum") %>">删除</a></td>
                         </tr>
                         <%
                     }
