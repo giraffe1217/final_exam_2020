@@ -1,5 +1,6 @@
 package test;
 
+import jdk.internal.org.objectweb.asm.tree.analysis.Value;
 import redis.clients.jedis.Jedis;
 
 import java.util.HashMap;
@@ -314,9 +315,11 @@ public class ControlRedis {
             map.put("Price",Price);
             map.put("BuyNum",BuyNum);
             double price = Double.parseDouble(Price)*Integer.parseInt(BuyNum);
-            //将该 图书加入用户的购物车
+            //将该图书加入用户的购物车
+            jedis.rpush(Customer,BookID);
             jedis.hmset(Customer,map);
             jedis.hincrByFloat(Customer,"sum",price);
+
             CloseJedis();
             return true;
         }
@@ -327,16 +330,27 @@ public class ControlRedis {
         }
 
     }
-
+    //TODO 修改商品数量(买家用户名，图书标识，修改后数量)
+    public  static boolean changegoods(String Customer,String BookID,String BuyNum){
+        InitialJedis();
+        String price = jedis.hget(BookID,"Price");
+        Double DPrice = Double.parseDouble(price);
+        DPrice = DPrice * Double.parseDouble(BuyNum);
+        jedis.hset(BookID,"BuyNum",BuyNum);
+        jedis.hincrByFloat(Customer,"sum",DPrice);
+        CloseJedis();
+        return true;
+    }
     //TODO 结算购物车
     public static boolean BuyGoods(String Customer){
         InitialJedis();
         //判断购物车是否为空
-        if(jedis.hlen(Customer) < 1){
+        if(jedis.llen(Customer) < 1){
             CloseJedis();
             return false;
         }
         else {
+            /*
             //判断余额是否足以支付
             if(Double.parseDouble(jedis.hget(Customer,"Money"))>=Double.parseDouble(jedis.hget(Customer,"sum"))){
                 double payment = Double.parseDouble(jedis.hget(Customer,"sum"))-Double.parseDouble(jedis.hget(Customer,"Money"));
@@ -344,10 +358,15 @@ public class ControlRedis {
                 //减少库存数(还没写)
                 CloseJedis();
                 return true;
+             */
+            //成功支付，并将库存减少，清空购物车
+            for(int i = 0;i<=jedis.llen(Customer);i++){
+                String BookID = jedis.rpop(Customer);
+                jedis.hincrByFloat(BookID,"remainNum", -Double.parseDouble(jedis.hget(BookID,"BuyNum")));
             }
+            CloseJedis();
+            return true;
         }
-        CloseJedis();
-        return false;
     }
 
 
