@@ -1,5 +1,10 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html lang="zh-CN">
+<%@ page import="java.lang.*" %>
+<%@ page import="test.ControlRedis" %>
+<%@ page import="java.util.Map" %>
+<%@ page import="java.util.Set" %>
+
 <head>
     <meta charset="UTF-8">
     <script src="jquery-3.5.1.min.js"></script>
@@ -163,5 +168,45 @@
         <button style="float:right;" class="btn btn-default" onclick="window.location='index.jsp';">注销账号</button>
         <button style="float:right;" class="btn btn-default" onclick="window.location='Add.jsp';">增加书籍</button>
 </div>
+<div class="container" style="opacity:0.8;" >
+    <div class="row">
+        <div class="offset-md-3 col-md-6">
+            <form class="form-horizontal" method="post">
+                <span class="heading">出售商品清单</span>
+                <table border="1" align="center" width="500">
+                    <tr align="center">
+                        <th>书名</th>
+                        <th>编号</th>
+                        <th>类型</th>
+                        <th>价格</th>
+                        <th>ISBN</th>
+                        <th>摘要</th>
+                        <th>出售种类</th>
+                        <th>剩余数量</th>
+                    </tr>
+                <%
+                    Set<Map<String,String>> books = ControlRedis.ShowAllGoodsByUser(ControlRedis.GetUserName());
+                    for (Map<String,String> map : books) {
+                        %>
+                        <tr align="center">
+                            <td><%=map.get("bookName") %></td>
+                            <td><%=map.get("bookNum") %></td>
+                            <td><%=map.get("bookType") %></td>
+                            <td><%=map.get("price") %></td>
+                            <td><%=map.get("ISBN") %></td>
+                            <td><%=map.get("summary") %></td>
+                            <td><%=map.get("sellType") %></td>
+                            <td><%=map.get("remainNum") %></td>
+                        </tr>
+                        <%
+                    }
+                %>
+                </table>
+            </form>
+
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

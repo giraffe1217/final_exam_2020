@@ -169,18 +169,18 @@
 <div class="container" style="opacity:0.8;" >
     <div class="row">
         <div class="offset-md-3 col-md-6">
-            <form class="form-horizontal" action="index.jsp" method="post">
+            <form class="form-horizontal" action="signUp.jsp" method="post">
                 <span class="heading">用户登录</span>
                 <div class="form-group">
-                    <input type="radio" class="checkbox-inline" name="UserClass" checked>普通用户
-                    <input type="radio" class="checkbox-inline" name="UserClass">商家用户
+                    <input type="radio" class="checkbox-inline" method="post" value="1" name="UserClass"  checked>普通用户
+                    <input type="radio" class="checkbox-inline" method="post" value="2" name="UserClass">商家用户
                 </div>
                 <div class="form-group">
-                    <input type="email" class="form-control"  name="Account" placeholder="用户名">
+                    <input type="email" class="form-control"  method="post"  name="Account" placeholder="用户名">
                     <i class="fa fa-user"></i>
                 </div>
                 <div class="form-group help">
-                    <input type="password" class="form-control" name="Password" placeholder="密　码">
+                    <input type="password" class="form-control" method="post"  name="Password" placeholder="密　码">
                     <i class="fa fa-lock"></i>
                     <a href="#" class="fa fa-question-circle"></a>
                 </div>

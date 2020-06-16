@@ -165,24 +165,24 @@
 <div class="container" style="opacity:0.8;" >
     <div class="row">
         <div class="offset-md-3 col-md-6">
-            <form class="form-horizontal" method="post">
+            <form class="form-horizontal" action="addOneBook.jsp" method="post">
                 <span class="heading">增加商品</span>
                 <div class="form-group">
-                    <input type="text" class="form-control"  placeholder="书名">
-                    <input type="text" class="form-control"  placeholder="编号">
-                    <select class="form-control" >
-                        <option value ="政治">政治</option>
-                        <option value ="经济">经济</option>
-                        <option value="文学">文学</option>
-                        <option value="科学">科学</option>
-                        <option value="体育">体育</option>
-                        <option value="军事">军事</option>
+                    <input type="text" class="form-control" name="bookName" placeholder="书名">
+                    <input type="text" class="form-control" name="bookNum"  placeholder="编号">
+                    <select class="form-control" name="bookType" >
+                        <option value ="politics">政治</option>
+                        <option value ="economics">经济</option>
+                        <option value="literature">文学</option>
+                        <option value="science">科学</option>
+                        <option value="sport">体育</option>
+                        <option value="military">军事</option>
                     </select>
-                    <input type="text" class="form-control"  placeholder="价格">
-                    <input type="text" class="form-control"  placeholder="ISBN">
-                    <input type="text" class="form-control"  placeholder="摘要">
-                    <input type="text" class="form-control"  placeholder="出售种类">
-                    <input type="text" class="form-control"  placeholder="库存">
+                    <input type="text" class="form-control" name="price"  placeholder="价格">
+                    <input type="text" class="form-control" name="ISBN" placeholder="ISBN">
+                    <input type="text" class="form-control" name="substract" placeholder="摘要">
+                    <input type="text" class="form-control" name="sellingType" placeholder="出售种类">
+                    <input type="text" class="form-control" name="remainingNum" placeholder="库存">
                 </div>
                 <div class="form-group">
                     <button type="submit" class="btn btn-default" name="logon">增加</button>
