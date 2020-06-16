@@ -194,5 +194,11 @@
         </div>
     </div>
 </div>
+<%
+    String acc=(String)session.getAttribute("Account");
+    if (acc!=null){
+        response.sendRedirect("home.jsp");
+    }
+%>
 </body>
 </html>
