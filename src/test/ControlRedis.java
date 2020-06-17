@@ -29,7 +29,7 @@ public class ControlRedis {
         }
     }
 
-    //测试 helloworld！
+    //测试 helloworld
     public static String SayHelloWorld()
     {
         InitialJedis();
