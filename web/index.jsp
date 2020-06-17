@@ -3,7 +3,7 @@
   要进行账号检测
 
 --%>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=utf-8" language="java" %>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -176,7 +176,7 @@
                     <input type="radio" class="checkbox-inline" method="post" value="2" name="UserClass">商家用户
                 </div>
                 <div class="form-group">
-                    <input type="email" class="form-control"  method="post"  name="Account" placeholder="用户名">
+                    <input type="text" class="form-control"  method="post"  name="Account" placeholder="用户名">
                     <i class="fa fa-user"></i>
                 </div>
                 <div class="form-group help">

@@ -1,7 +1,7 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=utf-8" language="java" %>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
+
     <script src="jquery-3.5.1.min.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>叮当淘，一个专卖各类书籍的网站</title>

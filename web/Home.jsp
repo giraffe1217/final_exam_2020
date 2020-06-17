@@ -1,4 +1,8 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="java.lang.*" %>
+<%@ page import="test.ControlRedis" %>
+<%@ page import="java.util.Map" %>
+<%@ page import="java.util.Set" %>
+<%@ page contentType="text/html;charset=utf-8" language="java" %>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -158,19 +162,77 @@
 </head>
 <body>
 
-    <div class="form-group" style="margin-bottom:0; opacity:0.7;">
-        <form class="form-horizontal" action="index.jsp" method="post" >
-            <h1>商品</h1>
-            <button style="float:right;" class="btn btn-default" onclick="window.location='index.jsp';">注销账号</button>
-                <select class="form-control">
-                    <option value ="政治">政治</option>
-                    <option value ="经济">经济</option>
-                    <option value="文学">文学</option>
-                    <option value="科学">科学</option>
-                    <option value="体育">体育</option>
-                    <option value="军事">军事</option>
+    <div class="form-horizontal" style="margin-bottom:0; opacity:0.7;">
+        <span class="heading">商品</span>
+        <button style="float:right;" class="btn btn-default" onclick="window.location='index.jsp';">注销账号</button>
+        <form class="form-horizontal" action="Home.jsp" method="post" >
+
+                <select name="bookType" class="form-control">
+                    <option value ="allbook">全部</option>
+                    <option value ="politics">政治</option>
+                    <option value ="economics">经济</option>
+                    <option value="literature">文学</option>
+                    <option value="science">科学</option>
+                    <option value="sport">体育</option>
+                    <option value="military">军事</option>
                 </select>
+            <button type="submit" style="float:right;"class="btn btn-default" name="apply">应用</button>
         </form>
+
+
+                    <table class="table" border="1" align="center" width="500">
+                        <tr align="center">
+                            <th>书名</th>
+                            <th>编号</th>
+                            <th>类型</th>
+                            <th>价格</th>
+                            <th>ISBN</th>
+                            <th>摘要</th>
+                            <th>出售种类</th>
+                            <th>剩余数量</th>
+                        </tr>
+                        <%
+                            String all="all";
+                            String bookType = request.getParameter("bookType");
+                            if(bookType==null||bookType.equals("allbook")){
+                                Set<Map<String,String>> books = ControlRedis.ShowAllGoods();
+                                for (Map<String,String> map : books) {
+                        %>
+                        <tr align="center">
+                            <td><%=map.get("bookName") %></td>
+                            <td><%=map.get("bookNum") %></td>
+                            <td><%=map.get("bookType") %></td>
+                            <td><%=map.get("price") %></td>
+                            <td><%=map.get("ISBN") %></td>
+                            <td><%=map.get("summary") %></td>
+                            <td><%=map.get("sellType") %></td>
+                            <td><%=map.get("remainNum") %></td>
+
+                        </tr>
+                        <%
+                                }
+                            }
+                            else{
+                                    Set<Map<String,String>> books = ControlRedis.ShowAllGoodsByType(bookType);
+                                    for (Map<String,String> map : books) {
+                        %>
+                        <tr align="center">
+                            <td><%=map.get("bookName") %></td>
+                            <td><%=map.get("bookNum") %></td>
+                            <td><%=map.get("bookType") %></td>
+                            <td><%=map.get("price") %></td>
+                            <td><%=map.get("ISBN") %></td>
+                            <td><%=map.get("summary") %></td>
+                            <td><%=map.get("sellType") %></td>
+                            <td><%=map.get("remainNum") %></td>
+                        </tr>
+                        <%
+                                }
+                            }
+                        %>
+                    </table>
+
     </div>
+
 </body>
 </html>

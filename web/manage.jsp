@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=utf-8" language="java" %>
 <html lang="zh-CN">
 <%@ page import="java.lang.*" %>
 <%@ page import="test.ControlRedis" %>
@@ -164,16 +164,14 @@
 <body>
 
 <div class="form-horizontal" style="margin-bottom:0; opacity:0.7;">
-        <h1>商品</h1>
+        <span class="heading">出售商品清单</span>
         <button style="float:right;" class="btn btn-default" onclick="window.location='index.jsp';">注销账号</button>
         <button style="float:right;" class="btn btn-default" onclick="window.location='Add.jsp';">增加书籍</button>
 </div>
-<div class="container" style="opacity:0.8;" >
-    <div class="row">
-        <div class="offset-md-3 col-md-6">
-            <form class="form-horizontal" method="post">
-                <span class="heading">出售商品清单</span>
-                <table border="1" align="center" width="500">
+<div class="form-horizontal" style="opacity:0.8;" >
+
+
+                <table class="table" border="1" align="center" width="500">
                     <tr align="center">
                         <th>书名</th>
                         <th>编号</th>
@@ -205,9 +203,6 @@
                 %>
                 </table>
             </form>
-
-        </div>
-    </div>
 </div>
 
 </body>

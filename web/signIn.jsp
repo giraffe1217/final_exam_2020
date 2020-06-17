@@ -5,7 +5,7 @@
   Time: 16:37
   To change this template use File | Settings | File Templates.
 --%>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=utf-8" language="java" %>
 <%@ page import="java.lang.*" %>
 <%@ page import="test.ControlRedis" %>
 
@@ -19,7 +19,7 @@
 <%
     try {
         // TODO 测试方便  每一次开始都清空 redis  日后删掉
-        ControlRedis.ClearJedis();
+      //  ControlRedis.ClearJedis();
 
         String Account = request.getParameter("Account");
         String Password = request.getParameter("Password");
