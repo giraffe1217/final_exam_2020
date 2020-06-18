@@ -29,7 +29,29 @@ public class ControlRedis {
         }
     }
 
-    //测试 helloworld
+    //保存当前的userName
+    public static void RemeberUserName(String userName)
+    {
+        InitialJedis();
+
+        // 将当前userName记录下来
+        jedis.hset("user","userName",userName);
+
+        CloseJedis();
+    }
+
+    //获取当前的userName
+    public static String GetUserName()
+    {
+        InitialJedis();
+
+        String userName = jedis.hget("user","userName");
+
+        CloseJedis();
+        return userName;
+    }
+
+    //测试 helloworld！
     public static String SayHelloWorld()
     {
         InitialJedis();
@@ -44,7 +66,7 @@ public class ControlRedis {
     }
 
     //清空数据库中的所有内容
-    private static void ClearJedis()
+    public static void ClearJedis()
     {
         InitialJedis();
         jedis.flushAll();
@@ -55,20 +77,18 @@ public class ControlRedis {
 
     //region 注册与登录
 
-    //TODO 买家进行账户和密码的存储 (注册)
-    public static void CustomerSignIn(String userName,String password) throws Exception
+    //买家进行账户和密码的存储 (注册)
+    public static void CustomerSignIn(String userName,String password)
     {
         InitialJedis();
 
         // 所有的买家账户信息都存储在 customer 哈希表中
         jedis.hset("customer",userName,password);
-        jedis.hset(userName,"sum", "0");
-        jedis.hset(userName,"Money", "0");
         CloseJedis();
     }
 
-    //TODO 卖家进行账户和密码的存储 (注册)
-    public static void SellerSignIn(String userName,String password) throws Exception
+    //卖家进行账户和密码的存储 (注册)
+    public static void SellerSignIn(String userName,String password)
     {
         InitialJedis();
 
@@ -78,8 +98,8 @@ public class ControlRedis {
         CloseJedis();
     }
 
-    //TODO 判断当前账户是否存在(登录)   type=“seller”  => 卖家  type=“customer”  => 买家
-    public static boolean UserExist(String userName,String type) throws Exception
+    //判断当前账户是否存在(登录)   type=“seller”  => 卖家  type=“customer”  => 买家
+    public static boolean UserExist(String userName,String type)
     {
         InitialJedis();
         boolean flag = false;
@@ -98,8 +118,8 @@ public class ControlRedis {
         return flag;
     }
 
-    //TODO 判断当前账户密码是否匹配(登录)  type=“seller”  => 卖家  type=“customer”  => 买家
-    public static boolean IsRightPassword(String userName,String password,String type) throws Exception
+    //判断当前账户密码是否匹配(登录)  type=“seller”  => 卖家  type=“customer”  => 买家
+    public static boolean IsRightPassword(String userName,String password,String type)
     {
         InitialJedis();
         boolean flag = false;
@@ -127,9 +147,9 @@ public class ControlRedis {
 
     //region 卖家管理商品
 
-    // TODO 增加一个图书商品  (用户名，书名，编号，类型，价格，ISBN，摘要，出售种类，剩余数量，本地图片地址)  其中 bookNum 不允许相同
+    // 增加一个图书商品  (用户名，书名，编号，类型，价格，ISBN，摘要，出售种类，剩余数量)  其中 bookNum 不允许相同
     public static boolean StoreOneGood(String userName, String bookName,String bookNum,String bookType,String price,
-                                       String ISBN,String summary,String sellType,String remainNum,String localPos)
+                                       String ISBN,String summary,String sellType,String remainNum)
     {
         InitialJedis();
 
@@ -139,6 +159,7 @@ public class ControlRedis {
             // bookNum 重复   操作失败
             if(jedis.sismember(userName,userName + bookNum))
             {
+                CloseJedis();
                 return false;
             }
         }
@@ -152,13 +173,14 @@ public class ControlRedis {
         map.put("summary",summary);
         map.put("sellType",sellType);
         map.put("remainNum",remainNum);
-        map.put("localPos",localPos);
+        map.put("userName",userName);
 
         // 由于 不同的卖家 对应不同的 出售商品列表   需要一个集合 userName 来存储 它的所有商品
         // 每个商品对应 一个哈希表 userName + bookNum 来保存当前商品的所有信息
         jedis.hmset(userName + bookNum,map);
         jedis.sadd(userName,userName + bookNum);
         jedis.sadd(bookType,userName + bookNum);
+        jedis.sadd("allgoods",userName + bookNum);
 
         CloseJedis();
         return true;
@@ -174,12 +196,14 @@ public class ControlRedis {
         jedis.hmset(userName + map.get("bookNum"), map);
         jedis.sadd(userName,userName + map.get("bookNum"));
         jedis.sadd(map.get("bookType"),userName + map.get("bookNum"));
+        jedis.sadd("allgoods",userName + map.get("bookNum"));
 
         CloseJedis();
         return true;
     }
 
-    // TODO 删除一个图书商品  (用户名,书名，编号，类型，价格，ISBN，摘要，出售种类，剩余数量)   其中 bookNum 不允许相同
+    // TODO 一个图书商品 remainNum - 1  (用户名,书名，编号，类型，价格，ISBN，摘要，出售种类，剩余数量)
+    // TODO 其中 同一商家的 bookNum 不允许相同  任意一本书的 ISBN 不允许相同
     public static boolean RemoveOneGood(String userName,String bookNum)
     {
         InitialJedis();
@@ -190,11 +214,13 @@ public class ControlRedis {
             // 不存在当前bookNum   操作失败
             if(!jedis.sismember(userName,userName + bookNum))
             {
+                CloseJedis();
                 return false;
             }
         }
         else {
             //如果当前不存在 userName 这个集合   操作失败
+            CloseJedis();
             return false;
         }
 
@@ -204,7 +230,6 @@ public class ControlRedis {
         int num = Integer.parseInt(remainNum);
         if (num > 1)
         {
-
             num = num - 1;
             oneItem.put("remainNum",String.valueOf(num));
             StoreOneGood(userName,oneItem);
@@ -217,8 +242,8 @@ public class ControlRedis {
         return true;
     }
 
-    // TODO 修改一个图书商品剩余数量
-    public static boolean ChangeOneGoodNum(String userName,String bookNum,String currentNum)
+    // TODO 一个图书商品 remainNum + 1 (用户名,书名，编号，类型，价格，ISBN，摘要，出售种类，剩余数量)
+    public static boolean AddOneGood(String userName,String bookNum)
     {
         InitialJedis();
 
@@ -228,11 +253,46 @@ public class ControlRedis {
             // 不存在当前bookNum   操作失败
             if(!jedis.sismember(userName,userName + bookNum))
             {
+                CloseJedis();
                 return false;
             }
         }
         else {
             //如果当前不存在 userName 这个集合   操作失败
+            CloseJedis();
+            return false;
+        }
+
+        //删除  如果remainNum 变为0 那么全部都没了
+        Map<String,String> oneItem = GetOneGood(userName,bookNum);
+        String remainNum = oneItem.get("remainNum");
+        int num = Integer.parseInt(remainNum);
+        num = num + 1;
+        oneItem.put("remainNum",String.valueOf(num));
+        StoreOneGood(userName,oneItem);
+
+        CloseJedis();
+        return true;
+    }
+
+    // TODO 修改一个图书商品 remainNum = currentNum
+    public static boolean ChangeOneGoodNum(String userName, String bookNum, String currentNum)
+    {
+        InitialJedis();
+
+        // 如果当前存在 userName 这个集合 那么就检查一下有没有当前商品
+        if(jedis.exists(userName))
+        {
+            // 不存在当前bookNum   操作失败
+            if(!jedis.sismember(userName,userName + bookNum))
+            {
+                CloseJedis();
+                return false;
+            }
+        }
+        else {
+            //如果当前不存在 userName 这个集合   操作失败
+            CloseJedis();
             return false;
         }
 
@@ -255,7 +315,33 @@ public class ControlRedis {
         return true;
     }
 
-    //TODO 直接删除当前商品
+    // TODO 通过ISBN  返回出售该书商家的 userName
+    public static String GetGoodOwnerUserName(String ISBN)
+    {
+        InitialJedis();
+
+        Set<String> bookSet = jedis.smembers("allgoods");
+        Set<Map<String,String>> books = new HashSet<>();
+        String UserName = "";
+
+        for (String str : bookSet)
+        {
+            books.add(jedis.hgetAll(str));
+        }
+
+        for (Map<String,String> map : books)
+        {
+            if (map.get("ISBN").equals(ISBN))
+            {
+                UserName = map.get("userName");
+            }
+        }
+
+        CloseJedis();
+        return UserName;
+    }
+
+    //直接删除当前商品
     public static boolean DeleteAllGood(String userName,String bookNum)
     {
         InitialJedis();
@@ -266,11 +352,13 @@ public class ControlRedis {
             // 不存在当前bookNum   操作失败
             if(!jedis.sismember(userName,userName + bookNum))
             {
+                CloseJedis();
                 return false;
             }
         }
         else {
             //如果当前不存在 userName 这个集合   操作失败
+            CloseJedis();
             return false;
         }
         String bookType = GetBookType(userName,bookNum);
@@ -278,6 +366,7 @@ public class ControlRedis {
         InitialJedis();
         jedis.srem(bookType,userName + bookNum);
         jedis.srem(userName,userName + bookNum);
+        jedis.srem("allgoods",userName + bookNum);
         jedis.del(userName + bookNum);
 
         CloseJedis();
@@ -296,11 +385,13 @@ public class ControlRedis {
             // 不存在当前bookNum   操作失败
             if(!jedis.sismember(userName,userName + bookNum))
             {
+                CloseJedis();
                 return "";
             }
         }
         else {
             //如果当前不存在 userName 这个集合   操作失败
+            CloseJedis();
             return "";
         }
 
@@ -310,6 +401,39 @@ public class ControlRedis {
         return bookType;
     }
 
+    //展示当前商家的所有出售的商品
+    public static Set<Map<String,String>> ShowAllGoodsByUser(String userName)
+    {
+        InitialJedis();
+
+        Set<String> bookSet = jedis.smembers(userName);
+        Set<Map<String,String>> books = new HashSet<>();
+
+        for (String str : bookSet)
+        {
+            books.add(jedis.hgetAll(str));
+        }
+
+        CloseJedis();
+        return books;
+    }
+
+    //TODO 展示所有出售的商品
+    public static Set<Map<String,String>> ShowAllGoods()
+    {
+        InitialJedis();
+
+        Set<String> bookSet = jedis.smembers("allgoods");
+        Set<Map<String,String>> books = new HashSet<>();
+
+        for (String str : bookSet)
+        {
+            books.add(jedis.hgetAll(str));
+        }
+
+        CloseJedis();
+        return books;
+    }
 
     // TODO 展示一个图书商品  (用户名,书名，编号，类型，价格，ISBN，摘要，出售种类，剩余数量,本地图片地址)
     // TODO 返回值是一个 hashmap 需要通过 map.get() 获得相关 key 的 value
@@ -323,11 +447,13 @@ public class ControlRedis {
             // 不存在当前bookNum   操作失败
             if(!jedis.sismember(userName,userName + bookNum))
             {
+                CloseJedis();
                 return null;
             }
         }
         else {
             //如果当前不存在 userName 这个集合   操作失败
+            CloseJedis();
             return null;
         }
 
@@ -339,48 +465,44 @@ public class ControlRedis {
 
     //endregion
 
-    //region 买家管理购物车及购买商品!（默认展示的商品都可购买）
+    //region 买家管理购物车及购买商品（默认展示的商品都可购买）
 
-    //TODO 根据图书的唯一标识：UserName+bookNum => BookID将一定数量的图书加入购物车(买家用户名，图书标识，购买数量，库存数量)
-    public static boolean AddShoppingCart(String Customer,String BookID,String Price,String BuyNum,String remainNum)
+    // 将一定数量的图书加入购物车(买家用户名，书名，书号，图书种类，图书价格，ISBN，图书摘要，出售种类，购买数量，库存数量)
+    public static boolean AddShoppingCart(String Account,String bookName,String bookNum,String bookType,String price,String ISBN, String summary,String sellType,String BuyNum,String remainNum)
     {
         InitialJedis();
 
-        //如果购买数量≤库存,即可加入购物车
-        if((Integer.parseInt(BuyNum)<=Integer.parseInt(remainNum))){
+            InitialJedis();
 
-            Map <String ,String> map = new HashMap<>();
-            map.put("BookID",BookID);
-            map.put("Price",Price);
+            Map<String,String> map = new HashMap<String,String>();
+            map.put("bookName",bookName);
+            map.put("bookNum",bookNum);
+            map.put("bookType",bookType);
+            map.put("price",price);
+            map.put("ISBN",ISBN);
+            map.put("summary",summary);
+            map.put("sellType",sellType);
+            map.put("remainNum",remainNum);
+            map.put("Account",Account);
             map.put("BuyNum",BuyNum);
 
-            double price = Double.parseDouble(Price)*Integer.parseInt(BuyNum);
-
-            //将该图书加入用户的购物车
-            jedis.rpush(Customer,BookID);
-            jedis.hmset(Customer,map);
-            jedis.hincrByFloat(Customer,"sum",price);
+            // 由于 不同的买家 对应不同的 购物车   需要一个集合 userName 来存储 它的所有商品
+            // 每个商品对应 一个哈希表 userName + bookID 来保存当前商品的所有信息
+            String BookID = bookName+bookNum;
+            jedis.hmset(Account + BookID,map);
+            jedis.sadd("C"+Account, Account + BookID);
 
             CloseJedis();
             return true;
-        }
-        //否则失败
-        else {
-            CloseJedis();
-            return false;
-        }
     }
 
-    //TODO 修改商品数量(买家用户名，图书标识，修改后数量)
-    public  static boolean changegoods(String Customer,String BookID,String BuyNum)
+    //TODO 清空购物车
+    public  static boolean FlushCart(String Customer)
     {
         InitialJedis();
-
-        String price = jedis.hget(BookID,"Price");
-        Double DPrice = Double.parseDouble(price);
-        DPrice = DPrice * Double.parseDouble(BuyNum);
-        jedis.hset(BookID,"BuyNum",BuyNum);
-        jedis.hincrByFloat(Customer,"sum",DPrice);
+        jedis.sadd("F","0");
+        jedis.sdiffstore("C"+Customer,"F","C"+Customer);
+        jedis.srem("C"+Customer,"0");
         CloseJedis();
 
         return true;
@@ -435,7 +557,6 @@ public class ControlRedis {
         for (String str : bookSet)
         {
             books.add(jedis.hgetAll(str));
-            System.out.println(str);
         }
 
         CloseJedis();
@@ -447,6 +568,5 @@ public class ControlRedis {
     //测试 暂时没有网页所以就用main函数测试函数功能
     public static void main(String[] args) throws IOException {
         ClearJedis();
-
     }
 }
