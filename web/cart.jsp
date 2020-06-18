@@ -179,7 +179,7 @@
             <td><%=map.get("ISBN") %></td>
             <td><%=map.get("summary") %></td>
             <td><%=map.get("sellType") %></td>
-            <td><input type="text" value="<%=map.get("BuyNum") %>"></td>
+            <td><input type="text" name="BuyNum" value="<%=map.get("BuyNum") %>"></td>
         </tr>
         <%
             }

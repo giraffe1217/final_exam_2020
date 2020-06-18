@@ -8,6 +8,7 @@
     <title>loading</title>
 </head>
 <body>
+
 <%
     String userName = ControlRedis.GetUserName();
     Set<Map<String,String>> books;
@@ -15,7 +16,7 @@
     for (Map<String,String> map : books) {
         String ISBN=map.get("ISBN");
         String bookNum = map.get("bookNum");
-        String BuyNum = map.get("BuyNum");
+        String BuyNum = request.getParameter("BuyNum");
         String remainNum = map.get("remainNum");
         Integer currentNum = Integer.parseInt(remainNum)-Integer.parseInt(BuyNum);
         String Sell=ControlRedis.GetGoodOwnerUserName(ISBN);

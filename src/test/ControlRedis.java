@@ -84,8 +84,6 @@ public class ControlRedis {
 
         // 所有的买家账户信息都存储在 customer 哈希表中
         jedis.hset("customer",userName,password);
-        jedis.hset(userName,"sum", "0");
-        jedis.hset(userName,"Money", "0");
         CloseJedis();
     }
 
@@ -469,27 +467,11 @@ public class ControlRedis {
 
     //region 买家管理购物车及购买商品（默认展示的商品都可购买）
 
-    //TODO 将一定数量的图书加入购物车(买家用户名，图书标识，购买数量，库存数量)
+    // 将一定数量的图书加入购物车(买家用户名，书名，书号，图书种类，图书价格，ISBN，图书摘要，出售种类，购买数量，库存数量)
     public static boolean AddShoppingCart(String Account,String bookName,String bookNum,String bookType,String price,String ISBN, String summary,String sellType,String BuyNum,String remainNum)
     {
         InitialJedis();
 
-
-        //如果购买数量≤库存,即可加入购物车
-        //if((Integer.parseInt(BuyNum)<=Integer.parseInt(remainNum))){
-/*
-            Map <String ,String> map = new HashMap<>();
-            map.put("BookID",BookID);
-            map.put("Price",Price);
-            map.put("BuyNum",BuyNum);
-
-            double price = Double.parseDouble(Price)*Integer.parseInt(BuyNum);
-
-            //将该图书加入用户的购物车
-            jedis.rpush(Customer,BookID);
-            jedis.hmset(Customer,map);
-            jedis.hincrByFloat(Customer,"sum",price);
-*/
             InitialJedis();
 
             Map<String,String> map = new HashMap<String,String>();
@@ -512,12 +494,6 @@ public class ControlRedis {
 
             CloseJedis();
             return true;
-        //}
-        //否则失败
-        //else {
-        //    CloseJedis();
-        //    return false;
-        //}
     }
 
     //TODO 清空购物车
