@@ -1,4 +1,8 @@
 <%@ page contentType="text/html;charset=utf-8" language="java" %>
+<%@ page import="java.lang.*" %>
+<%@ page import="test.ControlRedis" %>
+<%@ page import="java.util.Map" %>
+<%@ page import="java.util.Set" %>
 <html lang="zh-CN">
 <head>
 
@@ -159,12 +163,35 @@
 <body>
 
 <div class="form-group" style="margin-bottom:0; opacity:0.7;">
-    <form class="form-horizontal"  method="post" >
+    <form class="form-horizontal" action="CheckOut.jsp" method="post" >
         <h1>购物车</h1>
-        <button style="float:right;" class="btn btn-default" onclick="window.location='index.jsp';">结算</button>
+        <button type="submit" style="float:right;" class="btn btn-default" onclick="showDialog()">结算</button>
+        <%
+            String userName = ControlRedis.GetUserName();
+            Set<Map<String,String>> books = ControlRedis.ShowAllGoodsByUser("C"+userName);
+            for (Map<String,String> map : books) {
+        %>
+        <tr align="center">
+            <td><%=map.get("bookName") %></td>
+            <td><%=map.get("bookNum") %></td>
+            <td><%=map.get("bookType") %></td>
+            <td><%=map.get("price") %></td>
+            <td><%=map.get("ISBN") %></td>
+            <td><%=map.get("summary") %></td>
+            <td><%=map.get("sellType") %></td>
+            <td><input type="text" value="<%=map.get("BuyNum") %>"></td>
+        </tr>
+        <%
+            }
+        %>
         <select class="form-control">
         </select>
     </form>
 </div>
+<script>
+    function showDialog(){
+        alert("支付成功！");
+    }
+</script>
 </body>
 </html>

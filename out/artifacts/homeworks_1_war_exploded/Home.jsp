@@ -178,6 +178,9 @@
                 </select>
             <button type="submit" style="float:right;"class="btn btn-default" name="apply">应用</button>
         </form>
+        <form class="form-horizontal" action="cart.jsp" method="post" >
+            <button type="submit" style="float:right;"class="btn btn-default" name="cart">前往购物车</button>
+        </form>
 
 
                     <table class="table" border="1" align="center" width="500">
@@ -190,6 +193,7 @@
                             <th>摘要</th>
                             <th>出售种类</th>
                             <th>剩余数量</th>
+                            <th>购买数量</th>
                         </tr>
                         <%
                             String all="all";
@@ -198,6 +202,15 @@
                                 Set<Map<String,String>> books = ControlRedis.ShowAllGoods();
                                 for (Map<String,String> map : books) {
                         %>
+                        <form action="AddCart.jsp" method="post">
+                            <input type="hidden" name="bookName" value="<%=map.get("bookName") %>">
+                            <input type="hidden" name="bookNum" value="<%=map.get("bookNum") %>">
+                            <input type="hidden" name="bookType" value="<%=map.get("bookType") %>">
+                            <input type="hidden" name="price" value="<%=map.get("price") %>">
+                            <input type="hidden" name="ISBN" value="<%=map.get("ISBN") %>">
+                            <input type="hidden" name="summary" value="<%=map.get("summary") %>">
+                            <input type="hidden" name="sellType" value="<%=map.get("sellType") %>">
+                            <input type="hidden" name="remainNum" value="<%=map.get("remainNum") %>">
                         <tr align="center">
                             <td><%=map.get("bookName") %></td>
                             <td><%=map.get("bookNum") %></td>
@@ -207,8 +220,9 @@
                             <td><%=map.get("summary") %></td>
                             <td><%=map.get("sellType") %></td>
                             <td><%=map.get("remainNum") %></td>
-
+                            <td><input type="text" name="BuyNum"/><button type="submit" onclick="showDialog()" style="float:right;"class="btn btn-default" name="Add">加入购物车</button></td>
                         </tr>
+                        </form>
                         <%
                                 }
                             }
@@ -216,6 +230,14 @@
                                     Set<Map<String,String>> books = ControlRedis.ShowAllGoodsByType(bookType);
                                     for (Map<String,String> map : books) {
                         %>
+                        <form action="AddCart.jsp" method="post">
+                            <input type="hidden" name="bookName" value="<%=map.get("bookName") %>">
+                            <input type="hidden" name="boonNum" value="<%=map.get("bookNum") %>">
+                            <input type="hidden" name="bookType" value="<%=map.get("bookType") %>">
+                            <input type="hidden" name="price" value="<%=map.get("price") %>">
+                            <input type="hidden" name="ISBN" value="<%=map.get("ISBN") %>">
+                            <input type="hidden" name="summary" value="<%=map.get("summary") %>">
+                            <input type="hidden" name="sellType" value="<%=map.get("sellType") %>">
                         <tr align="center">
                             <td><%=map.get("bookName") %></td>
                             <td><%=map.get("bookNum") %></td>
@@ -225,11 +247,18 @@
                             <td><%=map.get("summary") %></td>
                             <td><%=map.get("sellType") %></td>
                             <td><%=map.get("remainNum") %></td>
+                            <td><input type="text" name="BuyNum"/><button type="submit" onclick="showDialog()" style="float:right;"class="btn btn-default" name="Add">加入购物车</button></td>
                         </tr>
+                        </form>
                         <%
                                 }
                             }
                         %>
+                        <script>
+                            function showDialog(){
+                                alert("添加成功！");
+                            }
+                        </script>
                     </table>
 
     </div>

@@ -278,7 +278,7 @@ public class ControlRedis {
     }
 
     // TODO 修改一个图书商品 remainNum = currentNum
-    public static boolean ChangeOneGoodNum(String userName,String bookNum,String currentNum)
+    public static boolean ChangeOneGoodNum(String userName, String bookNum, String currentNum)
     {
         InitialJedis();
 
@@ -469,14 +469,15 @@ public class ControlRedis {
 
     //region 买家管理购物车及购买商品（默认展示的商品都可购买）
 
-    //TODO 根据图书的唯一标识：UserName+bookNum => BookID将一定数量的图书加入购物车(买家用户名，图书标识，购买数量，库存数量)
-    public static boolean AddShoppingCart(String Customer,String BookID,String Price,String BuyNum,String remainNum)
+    //TODO 将一定数量的图书加入购物车(买家用户名，图书标识，购买数量，库存数量)
+    public static boolean AddShoppingCart(String Account,String bookName,String bookNum,String bookType,String price,String ISBN, String summary,String sellType,String BuyNum,String remainNum)
     {
         InitialJedis();
 
-        //如果购买数量≤库存,即可加入购物车
-        if((Integer.parseInt(BuyNum)<=Integer.parseInt(remainNum))){
 
+        //如果购买数量≤库存,即可加入购物车
+        //if((Integer.parseInt(BuyNum)<=Integer.parseInt(remainNum))){
+/*
             Map <String ,String> map = new HashMap<>();
             map.put("BookID",BookID);
             map.put("Price",Price);
@@ -488,27 +489,44 @@ public class ControlRedis {
             jedis.rpush(Customer,BookID);
             jedis.hmset(Customer,map);
             jedis.hincrByFloat(Customer,"sum",price);
+*/
+            InitialJedis();
+
+            Map<String,String> map = new HashMap<String,String>();
+            map.put("bookName",bookName);
+            map.put("bookNum",bookNum);
+            map.put("bookType",bookType);
+            map.put("price",price);
+            map.put("ISBN",ISBN);
+            map.put("summary",summary);
+            map.put("sellType",sellType);
+            map.put("remainNum",remainNum);
+            map.put("Account",Account);
+            map.put("BuyNum",BuyNum);
+
+            // 由于 不同的买家 对应不同的 购物车   需要一个集合 userName 来存储 它的所有商品
+            // 每个商品对应 一个哈希表 userName + bookID 来保存当前商品的所有信息
+            String BookID = bookName+bookNum;
+            jedis.hmset(Account + BookID,map);
+            jedis.sadd("C"+Account, Account + BookID);
 
             CloseJedis();
             return true;
-        }
+        //}
         //否则失败
-        else {
-            CloseJedis();
-            return false;
-        }
+        //else {
+        //    CloseJedis();
+        //    return false;
+        //}
     }
 
-    //TODO 修改商品数量(买家用户名，图书标识，修改后数量)
-    public  static boolean changegoods(String Customer,String BookID,String BuyNum)
+    //TODO 清空购物车
+    public  static boolean FlushCart(String Customer)
     {
         InitialJedis();
-
-        String price = jedis.hget(BookID,"Price");
-        Double DPrice = Double.parseDouble(price);
-        DPrice = DPrice * Double.parseDouble(BuyNum);
-        jedis.hset(BookID,"BuyNum",BuyNum);
-        jedis.hincrByFloat(Customer,"sum",DPrice);
+        jedis.sadd("F","0");
+        jedis.sdiffstore("C"+Customer,"F","C"+Customer);
+        jedis.srem("C"+Customer,"0");
         CloseJedis();
 
         return true;
